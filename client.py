@@ -29,7 +29,7 @@ class Client(object):
             message,
             datetime.now().strftime("%x %X")
         )
-        return self.socket.send(m.to_string())
+        self.socket.sendall(m.to_string())
 
 
 if __name__ == '__main__':
