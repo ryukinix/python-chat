@@ -27,14 +27,18 @@ class Client(object):
             self.name,
             subject,
             message,
-            datetime.now().strftime("%x %X")
+            datetime.now().strftime("%d/%m/%Y %X")
         )
-        self.socket.sendall(m.to_string())
+        m.send(self.socket)
 
 
 if __name__ == '__main__':
     c = Client()
     c.connect()
     print("Cliente conectado a {}:{}".format(c.host, c.port))
-    c.send_message("Hey!")
+    while True:
+        try:
+            c.send_message(input('>>> '))
+        except:
+            break
     c.socket.close()

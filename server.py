@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import protocol
 import socket
 
@@ -33,5 +35,12 @@ if __name__ == '__main__':
     s.listen()
     client, addr = s.accept()
     print("Cliente conectado: ", addr)
+    while True:
+        try:
+            msg = protocol.Message.receive(client)
+            print(msg)
+        except protocol.ClientClosedError:
+            print('Cliente fechou a conexão: ', client)
+            break
     client.close()
     s.close()
