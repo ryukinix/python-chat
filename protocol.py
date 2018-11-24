@@ -3,7 +3,11 @@
 import json
 
 HOST = '127.0.0.1'
-PORT = 3131
+PORT = 9999
+
+
+class ClientClosedError(Exception):
+    pass
 
 
 class Message:
@@ -14,8 +18,10 @@ class Message:
     converter todo o conteúdo em bytes codificada de tal
     maneira capaz de separá-la em diferentes atributos. A notação
     escolhida é o JSON (JavaScript Object Notation), muito similar ao
-    tipo de dados dicionário em Python.
+    tipo de dados dicionário em Python. Adicionalmente é enviado
+    um header também com o tamanho da mensagem.
 
+    Content-length: int
     {
        'client_name': 'str',
        'subject': 'str'
@@ -38,19 +44,56 @@ class Message:
         self.message = message
         self.date = date
 
-    def to_string(self) -> bytes:
-        """Transforma a mensagem numa codificação JSON e então em bytes"""
+    def __repr__(self):
+        attrs = ', '.join(['{}={!r}'.format(k, v)
+                           for k, v in vars(self).items()])
+        return f'Message({attrs})'
+
+    def to_bytes(self) -> bytes:
+        """Transforma a mensagem numa codificação JSON e então em bytes.
+        """
         attrs = vars(self)
-        json_string = json.dumps(attrs, ensure_ascii=False) + '\n'
+        json_string = json.dumps(attrs, ensure_ascii=False)
         json_encoded = json_string.encode(Message.encoding)
         json_bytes = bytes(json_encoded)
         return json_bytes
 
     @classmethod
-    def from_string(cls, message: bytes):
+    def from_bytes(cls, message: bytes):
         """Transforma uma string em uma instância de Message"""
-        dic = json.loads(message.decode(Message.encoding))
+        dic = json.loads(message.decode(cls.encoding))
         return cls(dic['client_name'],
                    dic['subject'],
                    dic['message'],
                    dic['date'])
+
+    @classmethod
+    def receive(cls, socket):
+        """Recebe uma mensagem e decodifica a partir de um socket."""
+        header = cls.readline(socket)
+        attr, value = header.split(':')
+        if attr != 'Content-length':
+            raise ValueError("Invalid header: expected Content-length, got " + attr)
+        length = int(value)
+        msg = socket.recv(length)
+        return cls.from_bytes(msg)
+
+    def send(self, socket):
+        """Envia uma mensagem codificada para um determinado socket"""
+        msg_bytes = self.to_bytes()
+        content_length = 'Content-length:{}\n'.format(len(msg_bytes))
+        content_length_bytes = content_length.encode(self.encoding)
+        socket.sendall(content_length_bytes + msg_bytes)
+
+    @staticmethod
+    def readline(socket):
+        """Lê os caracteres de um socket até a quebra de linha"""
+        msg = bytes()
+        while True:
+            c = socket.recv(1)
+            if c == b'\n':
+                break
+            elif c == b'':  # quando uma conexão é fechada, recv() retorna um byte vazio
+                raise ClientClosedError('Cliente morreu!')
+            msg += c
+        return msg.decode(Message.encoding)
