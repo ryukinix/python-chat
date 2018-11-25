@@ -56,8 +56,8 @@ class Client(object):
 
 class ClientController(QtCore.QThread):
 
-    server_died = QtCore.pyqtSignal()
-    new_message = QtCore.pyqtSignal()
+    server_died_signal = QtCore.pyqtSignal()
+    new_message_signal = QtCore.pyqtSignal()
 
     def __init__(self, client):
         super().__init__()
@@ -110,8 +110,8 @@ class ClientGUI(QtWidgets.QMainWindow):
         main = cls()
         main.show()
         main.client.connect()
-        main.client_thread.server_died.connect(app.quit)
-        main.client_thread.new_message.connect(main.receive)
+        main.client_thread.server_died_signal.connect(app.quit)
+        main.client_thread.new_message_signal.connect(main.receive)
         main.client_thread.start()
         saddr = '{}:{}'.format(main.client.host, main.client.port)
         caddr = '{}:{}'.format(*main.client.socket.getsockname())
