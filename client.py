@@ -49,7 +49,7 @@ class ClientGUI(QtWidgets.QMainWindow):
         super().__init__()
         uic.loadUi('ui/client.ui', self)
         self.shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence("Ctrl+Enter"),  # send message shortcut
+            QtGui.QKeySequence("Ctrl+Return"),  # send message shortcut
             self
         )
         self.shortcut.activated.connect(self.send)
