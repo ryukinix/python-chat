@@ -108,3 +108,11 @@ class Message:
                 raise ClientClosedError('Cliente fechou a conexão!')
             msg += c
         return msg.decode(Message.encoding)
+
+
+def socket_source_address(socket):
+    return ':'.join(map(str, socket.getsockname()))
+
+
+def socket_dest_address(socket):
+    return ':'.join(map(str, socket.getpeername()))
