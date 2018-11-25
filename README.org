@@ -13,8 +13,7 @@
 Este trabalho explora um sistema de troca de mensagens usando sockets
 TCP na arquitetura cliente-servidor. O sistema é feito na linguagem
 Python e pode receber N clientes. Cada mensagem válida que chega no
-servidor pela porta 9999 é
-enviada para todos os clientes atuais
+servidor pela porta 9999 é enviada para todos os clientes atuais
 conectados. Projeto destinado a trabalho final da disciplina Redes de
 Computadores, 2018.2, orientado por Professor Wendley S. Silva, na
 Universidade Federal do Ceará campus de Sobral.
@@ -22,13 +21,45 @@ Universidade Federal do Ceará campus de Sobral.
 #+END_abstract
 
 
-* Python Chat
+* Introdução
 
-Sistema de Chat escrito em Python usando Sockets TCP. Suporta N
-clientes. O sistema de concorrência é gerenciado usando filas e
-threads.
+Este sistema de chat é escrito na linguagem Python e usa Sockets TCP
+na camada de transporte para realizar a comunicação no modelo
+cliente-servidor. O servidor suporta N clientes e a porta escolhida para
+comunicação é a 9999.
 
-* Showcase
+O protocolo de mensagem definido tem a seguinte forma:
+
+#+CAPTION: Protocolo de aplicação definido para a troca de mensagens.
+#+BEGIN_SRC text
+  Content-length: int
+  {
+     'client_name': 'str',
+     'subject': 'str',
+     'message': 'str',
+     'date': 'str'
+  }'
+#+END_SRC
+
+Content-length é um header finalizado por quebra de linha com o
+tamanho (em bytes) da próxima mensagem que o cliente deve ler. Essa
+escolha é feita pela robustez de poder enviar qualquer tipo de
+caractere no campo de mensagem. Se todos os atributos fossem
+finalizados com a quebra de linha, a mensagem em si não
+poderia ter quebra de linha, do contrário iria quebrar a aplicação.
+
+Esse protocolo é definido no arquivo [[./protocol.py]] na classe
+~Message~. O ~host~ e ~porta~ padrão também é definido nesse mesmo
+arquivo, com os valores de 127.0.0.1 e 9999.
+
+Os arquivos [[./client.py]] e [[./server.py]] contém ambos os códigos destinados ao
+cliente e servidor com o código integrado para a interface gráfica.
+
+O sistema de concorrência é gerenciado usando filas e threads. O
+framework para criação de interfaces é o Qt.
+
+
+* TODO Showcase
 
 [[./pics/application.gif]]
 
