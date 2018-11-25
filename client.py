@@ -67,10 +67,10 @@ class ClientController(QtCore.QThread):
         try:
             for msg in self.client.receive_messages():
                 self.client.messages.put(msg)
-                self.new_message.emit()
+                self.new_message_signal.emit()
         except protocol.ClientClosedError:
             print("Servidor morreu!")
-            self.server_died.emit()
+            self.server_died_signal.emit()
 
 
 class ClientGUI(QtWidgets.QMainWindow):
@@ -104,6 +104,13 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.chat_text.moveCursor(QtGui.QTextCursor.End)
         self.chat_text.ensureCursorVisible()
 
+    def critical_error(self):
+        dlg = QtWidgets.QMessageBox()
+        dlg.setWindowTitle("Uma merda enorme aconteceu!")
+        dlg.setIcon(QtWidgets.QMessageBox.Critical)
+        dlg.setText("O servidor está desligado! Tente rodar server.py antes.")
+        sys.exit(dlg.exec_())
+
     @classmethod
     def run(cls):
         app = QtWidgets.QApplication(sys.argv)
@@ -111,13 +118,9 @@ class ClientGUI(QtWidgets.QMainWindow):
         try:
             main.client.connect()
         except ConnectionRefusedError:
-            dlg = QtWidgets.QMessageBox()
-            dlg.setWindowTitle("Uma merda enorme aconteceu!")
-            dlg.setIcon(QtWidgets.QMessageBox.Critical)
-            dlg.setText("O servidor está desligado! Tente rodar server.py antes.")
-            sys.exit(dlg.exec_())
+            main.critical_error()
         main.show()
-        main.client_thread.server_died_signal.connect(app.quit)
+        main.client_thread.server_died_signal.connect(main.critical_error)
         main.client_thread.new_message_signal.connect(main.receive)
         main.client_thread.start()
         saddr = '{}:{}'.format(main.client.host, main.client.port)
