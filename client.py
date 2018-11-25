@@ -90,6 +90,7 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.client_thread.new_message_signal.connect(self.receive)
         self.client_thread.start()
         self.destroyed.connect(self.client.close)
+        self.message_text.setFocus()
 
     def send(self):
         """Envia uma mensagem para o servidor como as informações da GUI"""
