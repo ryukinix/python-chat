@@ -86,6 +86,10 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.send_button.clicked.connect(self.send)
         self.client = Client()
         self.client_thread = ClientController(self.client)
+        self.client_thread.server_died_signal.connect(self.critical_error)
+        self.client_thread.new_message_signal.connect(self.receive)
+        self.client_thread.start()
+        self.destroyed.connect(self.client.close)
 
     def send(self):
         """Envia uma mensagem para o servidor como as informações da GUI"""
@@ -120,16 +124,11 @@ class ClientGUI(QtWidgets.QMainWindow):
         except ConnectionRefusedError:
             main.critical_error()
         main.show()
-        main.client_thread.server_died_signal.connect(main.critical_error)
-        main.client_thread.new_message_signal.connect(main.receive)
-        main.client_thread.start()
-        saddr = '{}:{}'.format(main.client.host, main.client.port)
-        caddr = '{}:{}'.format(*main.client.socket.getsockname())
+        saddr = protocol.socket_dest_address(main.client.socket)
+        caddr = protocol.socket_source_address(main.client.socket)
         msg = f"Cliente conectado a {saddr} e recebendo resposta em {caddr}"
         main.statusBar().showMessage(msg)
-        status = app.exec_()
-        main.client.close()
-        sys.exit(status)
+        sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
