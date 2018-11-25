@@ -25,7 +25,7 @@ class Server(object):
             socket.SOCK_STREAM  # TCP
         )
         self.socket.bind((host, port))
-        self.clients = []              # clientes no sistema
+        self.clients = []              # socket de clientes no sistema
         self.messages = queue.Queue()  # fila de mensagens
 
     def listen(self):
@@ -36,6 +36,10 @@ class Server(object):
 
     def close(self):
         self.socket.close()
+
+    def send_broadcast(self, message):
+        for client in self.clients:
+            message.send(client)
 
 
 class ServerController(QtCore.QThread):
@@ -66,6 +70,7 @@ class ServerController(QtCore.QThread):
                 # print('Mensagem recebida de ', client)
                 # print('Conteudo: ', msg)
                 self.server.messages.put(msg)
+                self.server.send_broadcast(msg)
                 self.message_signal.emit()
             except protocol.ClientClosedError:
                 print('Cliente fechou a conexão: ', client.getpeername())
