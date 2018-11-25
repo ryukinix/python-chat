@@ -93,17 +93,18 @@ class ServerGUI(QtWidgets.QMainWindow):
         uic.loadUi('ui/server.ui', self)
         self.server = Server()
         self.server_thread = ServerController(self.server)
-        self.server_thread.message_signal.connect(self.read_messages)
-        self.server_thread.new_client_signal.connect(self.list_clients)
-        self.server_thread.deleted_client_signal.connect(self.list_clients)
+        self.server_thread.message_signal.connect(self.update_chat_logging)
+        self.server_thread.new_client_signal.connect(self.update_list_clients)
+        self.server_thread.deleted_client_signal.connect(self.update_list_clients)
+        self.destroyed.connect(self.server.close)
 
-    def read_messages(self):
+    def update_chat_logging(self):
         msg = self.server.messages.get()
         self.chat_text.insertPlainText(str(msg))
         self.chat_text.moveCursor(QtGui.QTextCursor.End)
         self.chat_text.ensureCursorVisible()
 
-    def list_clients(self):
+    def update_list_clients(self):
         self.clients_list.clear()
         for client in self.server.clients:
             addr = protocol.socket_dest_address(client)
@@ -112,6 +113,7 @@ class ServerGUI(QtWidgets.QMainWindow):
             self.clients_list.addItem(item)
 
     def busy_port_error(self):
+        """Message box de erro: porta ocupada"""
         dlg = QtWidgets.QMessageBox()
         dlg.setWindowTitle("Uma merda enorme aconteceu!")
         dlg.setIcon(QtWidgets.QMessageBox.Critical)
@@ -133,7 +135,6 @@ class ServerGUI(QtWidgets.QMainWindow):
         main.statusBar().showMessage(msg)
         main.server_thread.finished.connect(app.exit)
         main.server_thread.start()
-        main.destroyed.connect(main.server.close)
         sys.exit(app.exec_())
 
 
