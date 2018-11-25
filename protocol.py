@@ -28,8 +28,6 @@ class Message:
        'message': 'str',
        'date': 'str'
     }
-
-    A finalização é feita por uma quebra de linha
     """
 
     encoding = 'utf-8'
