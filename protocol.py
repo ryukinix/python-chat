@@ -54,7 +54,7 @@ class Message:
                'Cliente: {client_name}\tData: {date}\n'
                'Assunto: {subject}\n'
                'Mensagem: {message}\n'
-               '-')
+               '-\n')
         return msg.format_map(vars(self))
 
     def to_bytes(self) -> bytes:
