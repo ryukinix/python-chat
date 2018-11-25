@@ -24,7 +24,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QTextBrowser" name="messages_text">
+   <widget class="QTextBrowser" name="chat_text">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -60,7 +60,7 @@ p, li { white-space: pre-wrap; }
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="messages_label">
+   <widget class="QLabel" name="chat_label">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -99,7 +99,7 @@ font.center {
 }</string>
     </property>
     <property name="text">
-     <string>Mensagens</string>
+     <string>Chat</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

@@ -105,7 +105,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Cliente</string>
+      <string>Manoel</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="subject_text">
