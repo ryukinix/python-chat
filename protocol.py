@@ -24,7 +24,7 @@ class Message:
     Content-length: int
     {
        'client_name': 'str',
-       'subject': 'str'
+       'subject': 'str',
        'message': 'str',
        'date': 'str'
     }
