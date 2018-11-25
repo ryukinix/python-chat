@@ -24,17 +24,19 @@ class Server(object):
             socket.AF_INET,     # IPV4
             socket.SOCK_STREAM  # TCP
         )
-        self.socket.bind((host, port))
         self.clients = []              # socket de clientes no sistema
         self.messages = queue.Queue()  # fila de mensagens
 
     def listen(self):
-        return self.socket.listen(5)
+        self.socket.bind((self.host, self.port))
+        self.socket.listen(5)
 
     def accept(self):
         return self.socket.accept()
 
     def close(self):
+        for client in self.clients:
+            client.close()
         self.socket.close()
 
     def send_broadcast(self, message):
@@ -96,20 +98,30 @@ class ServerGUI(QtWidgets.QMainWindow):
         self.chat_text.moveCursor(QtGui.QTextCursor.End)
         self.chat_text.ensureCursorVisible()
 
+    def busy_port_error(self):
+        dlg = QtWidgets.QMessageBox()
+        dlg.setWindowTitle("Uma merda enorme aconteceu!")
+        dlg.setIcon(QtWidgets.QMessageBox.Critical)
+        dlg.setText(f"A porta {self.server.port} está ocupada! Tente outra.")
+        sys.exit(dlg.exec_())
+
     @classmethod
     def run(cls):
         app = QtWidgets.QApplication(sys.argv)
         main = cls()
+        try:
+            main.server.listen()
+        except OSError:
+            main.busy_port_error()
+
         main.show()
-        main.server.listen()
         msg = "Recebendo conexões em {}:{}".format(main.server.host,
                                                    main.server.port)
         main.statusBar().showMessage(msg)
         main.server_thread.finished.connect(app.exit)
         main.server_thread.start()
-        status = app.exec_()
-        main.server.close()
-        sys.exit(status)
+        main.destroyed.connect(main.server.close)
+        sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
