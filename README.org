@@ -11,12 +11,12 @@
 #+BEGIN_abstract
 
 Este trabalho explora um sistema de troca de mensagens usando sockets
-TCP na arquitetura cliente-servidor. O sistema é feito na linguagem
-Python e pode receber N clientes. Cada mensagem válida que chega no
-servidor pela porta 9999 é enviada para todos os clientes atuais
-conectados. Projeto destinado a trabalho final da disciplina Redes de
-Computadores, 2018.2, orientado por Professor Wendley S. Silva, na
-Universidade Federal do Ceará campus de Sobral.
+TCP na arquitetura cliente-servidor. Cada mensagem válida que chega no
+servidor pela porta 9999 é apresentada no servidor e enviada para
+todos os clientes atuais conectados. Projeto destinado a trabalho
+final da disciplina Redes de Computadores, 2018.2, orientado por
+Professor Wendley S. Silva, na Universidade Federal do Ceará campus de
+Sobral.
 
 #+END_abstract
 
@@ -30,6 +30,7 @@ comunicação é a 9999.
 
 O protocolo de mensagem definido tem a seguinte forma:
 
+#+ATTR_LATEX: :placement [H]
 #+CAPTION: Protocolo de aplicação definido para a troca de mensagens.
 #+BEGIN_SRC text
   Content-length: int
@@ -65,9 +66,8 @@ framework para criação de interfaces é o Qt.
 
 * Instalação & Execução
 
-Você deve possuir a versão 3.7 de Python instalado no sistema.
-
-As dependências podem ser instaladas pelo gerenciador de pacotes do
+Você deve possuir a versão 3.7 de Python instalado no sistema.As
+dependências podem ser instaladas pelo gerenciador de pacotes do
 python ~pip~. O seguinte comando deverá instalar o PyQt5, biblioteca
 wrapper do framework Qt5 para criação de interfaces gráficas:
 
@@ -81,7 +81,7 @@ Para executar o sistema, primeiro rode o servidor via:
 python server.py
 #+END_SRC
 
-Então rode depois quantos clientes quiser via:
+Então execute depois quantos clientes quiser via:
 
 #+BEGIN_SRC shell
 python client.py
