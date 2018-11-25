@@ -69,7 +69,7 @@ Você deve possuir a versão 3.7 de Python instalado no sistema.
 
 As dependências podem ser instaladas pelo gerenciador de pacotes do
 python ~pip~. O seguinte comando deverá instalar o PyQt5, biblioteca
-wrapper para framework de criação de interfaces gráficas Qt5.:
+wrapper do framework Qt5 para criação de interfaces gráficas:
 
 #+BEGIN_SRC shell
 pip install -r requirements.txt
