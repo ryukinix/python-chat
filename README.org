@@ -1,7 +1,8 @@
 #+STARTUP: showall align
 #+OPTIONS: todo:nil tasks:("IN-PROGRESS" "DONE") tags:nil toc:nil
 #+TITLE: Python Chat: A Messaging Protocol over TCP
-#+AUTHOR: Manoel Vilela
+#+AUTHOR: Manoel Vilela (394192) / Samuel Hericles (389118)
+#+EXCLUDE_TAGS: NO_EXPORT
 #+LANGUAGE: bt-br
 #+LATEX_HEADER: \usepackage[]{babel}
 #+LATEX_HEADER: \usepackage{indentfirst}
@@ -28,7 +29,7 @@ na camada de transporte para realizar a comunicação no modelo
 cliente-servidor. O servidor suporta N clientes e a porta escolhida para
 comunicação é a 9999.
 
-O protocolo de mensagem definido tem a seguinte forma:
+
 
 #+ATTR_LATEX: :placement [H]
 #+CAPTION: Protocolo de aplicação definido para a troca de mensagens.
@@ -42,12 +43,14 @@ O protocolo de mensagem definido tem a seguinte forma:
   }'
 #+END_SRC
 
-Content-length é um header finalizado por quebra de linha com o
-tamanho (em bytes) da próxima mensagem que o cliente deve ler. Essa
-escolha é feita pela robustez de poder enviar qualquer tipo de
-caractere no campo de mensagem. Se todos os atributos fossem
-finalizados com a quebra de linha, a mensagem em si não
-poderia ter quebra de linha, do contrário iria quebrar a aplicação.
+O protocolo de mensagem é definido com um header Content-length
+finalizado por quebra de linha, na qual possui o tamanho (em bytes) da
+próxima mensagem que o cliente deve ler. Essa mensagem é codificada
+usando a notação JSON (JavaScript Object Notation). Essa escolha é
+feita pela robustez de poder enviar qualquer tipo de caractere no
+campo de mensagem. Se todos os atributos fossem finalizados com a
+quebra de linha, a mensagem em si não poderia ter quebra de linha, do
+contrário iria quebrar a aplicação.
 
 Esse protocolo é definido no arquivo [[./protocol.py]] na classe
 ~Message~. O ~host~ e ~porta~ padrão também é definido nesse mesmo
@@ -60,7 +63,7 @@ O sistema de concorrência é gerenciado usando filas e threads. O
 framework para criação de interfaces é o Qt.
 
 
-* TODO Showcase
+* Showcase :NO_EXPORT:
 
 [[./pics/application.gif]]
 
