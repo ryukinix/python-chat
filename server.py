@@ -50,6 +50,7 @@ class ServerController(QtCore.QThread):
 
     message_signal = QtCore.pyqtSignal()
     new_client_signal = QtCore.pyqtSignal()
+    deleted_client_signal = QtCore.pyqtSignal()
 
     def __init__(self, server):
         super().__init__()
@@ -61,6 +62,7 @@ class ServerController(QtCore.QThread):
             client, addr = self.server.accept()
             print("Cliente conectado: ", addr)
             self.server.clients.append(client)
+            self.new_client_signal.emit()
             t = threading.Thread(target=self.read_message, args=(client,))
             t.start()
 
@@ -78,6 +80,7 @@ class ServerController(QtCore.QThread):
                 print('Cliente fechou a conexão: ', client.getpeername())
                 self.server.clients.remove(client)
                 client.close()
+                self.deleted_client_signal.emit()
                 break
 
 
@@ -91,12 +94,21 @@ class ServerGUI(QtWidgets.QMainWindow):
         self.server = Server()
         self.server_thread = ServerController(self.server)
         self.server_thread.message_signal.connect(self.read_messages)
+        self.server_thread.new_client_signal.connect(self.list_clients)
+        self.server_thread.deleted_client_signal.connect(self.list_clients)
 
     def read_messages(self):
         msg = self.server.messages.get()
         self.chat_text.insertPlainText(str(msg))
         self.chat_text.moveCursor(QtGui.QTextCursor.End)
         self.chat_text.ensureCursorVisible()
+
+    def list_clients(self):
+        self.clients_list.clear()
+        for client in self.server.clients:
+            addr = protocol.socket_dest_address(client)
+            item = QtWidgets.QListWidgetItem(addr)
+            self.clients_list.addItem(item)
 
     def busy_port_error(self):
         dlg = QtWidgets.QMessageBox()
