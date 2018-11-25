@@ -108,8 +108,15 @@ class ClientGUI(QtWidgets.QMainWindow):
     def run(cls):
         app = QtWidgets.QApplication(sys.argv)
         main = cls()
+        try:
+            main.client.connect()
+        except ConnectionRefusedError:
+            dlg = QtWidgets.QMessageBox()
+            dlg.setWindowTitle("Uma merda enorme aconteceu!")
+            dlg.setIcon(QtWidgets.QMessageBox.Critical)
+            dlg.setText("O servidor está desligado! Tente rodar server.py antes.")
+            sys.exit(dlg.exec_())
         main.show()
-        main.client.connect()
         main.client_thread.server_died_signal.connect(app.quit)
         main.client_thread.new_message_signal.connect(main.receive)
         main.client_thread.start()
