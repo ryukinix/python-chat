@@ -4,12 +4,14 @@
 import protocol
 import socket
 import sys
+import queue
 from datetime import datetime
 
 # PyQt5 imports
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5 import uic
+from PyQt5 import QtCore
 
 
 class Client(object):
@@ -27,6 +29,12 @@ class Client(object):
             socket.AF_INET,      # IPV4
             socket.SOCK_STREAM,  # TCP
         )
+        self.messages = queue.Queue()
+
+    def receive_messages(self):
+        """Receptor de mensagens do servidor"""
+        while True:
+            yield protocol.Message.receive(self.socket)
 
     def connect(self):
         """Conecta com o servidor"""
@@ -42,6 +50,28 @@ class Client(object):
         )
         m.send(self.socket)
 
+    def close(self):
+        self.socket.close()
+
+
+class ClientController(QtCore.QThread):
+
+    server_died = QtCore.pyqtSignal()
+    new_message = QtCore.pyqtSignal()
+
+    def __init__(self, client):
+        super().__init__()
+        self.client = client
+
+    def run(self):
+        try:
+            for msg in self.client.receive_messages():
+                self.client.messages.put(msg)
+                self.new_message.emit()
+        except protocol.ClientClosedError:
+            print("Servidor morreu!")
+            self.server_died.emit()
+
 
 class ClientGUI(QtWidgets.QMainWindow):
 
@@ -55,15 +85,24 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.shortcut.activated.connect(self.send)
         self.send_button.clicked.connect(self.send)
         self.client = Client()
+        self.client_thread = ClientController(self.client)
 
     def send(self):
+        """Envia uma mensagem para o servidor como as informações da GUI"""
         subject = self.subject_text.text()
         message = self.message_text.toPlainText()
         name = self.name_text.text()
-        self.message_text.clear()
+        self.message_text.clear()  # clean message_text field
         self.client.name = name
         if message:
             self.client.send_message(message, subject)
+
+    def receive(self):
+        """Recebe uma mensagem do servidor e atualiza a interface."""
+        msg = self.client.messages.get()
+        self.chat_text.insertPlainText(str(msg))
+        self.chat_text.moveCursor(QtGui.QTextCursor.End)
+        self.chat_text.ensureCursorVisible()
 
     @classmethod
     def run(cls):
@@ -71,10 +110,16 @@ class ClientGUI(QtWidgets.QMainWindow):
         main = cls()
         main.show()
         main.client.connect()
-        msg = "Cliente conectado a {}:{}".format(main.client.host,
-                                                 main.client.port)
+        main.client_thread.server_died.connect(app.quit)
+        main.client_thread.new_message.connect(main.receive)
+        main.client_thread.start()
+        saddr = '{}:{}'.format(main.client.host, main.client.port)
+        caddr = '{}:{}'.format(*main.client.socket.getsockname())
+        msg = f"Cliente conectado a {saddr} e recebendo resposta em {caddr}"
         main.statusBar().showMessage(msg)
-        sys.exit(app.exec_())
+        status = app.exec_()
+        main.client.close()
+        sys.exit(status)
 
 
 if __name__ == '__main__':
