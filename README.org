@@ -13,8 +13,8 @@
 Este trabalho explora um sistema de troca de mensagens usando sockets
 TCP na arquitetura cliente-servidor. Cada mensagem válida que chega no
 servidor pela porta 9999 é apresentada no servidor e enviada para
-todos os clientes atuais conectados. Projeto destinado a trabalho
-final da disciplina Redes de Computadores, 2018.2, orientado por
+todos os clientes atuais conectados. Projeto destinado ao trabalho
+final da disciplina Redes de Computadores, 2018.2, ministrada por
 Professor Wendley S. Silva, na Universidade Federal do Ceará campus de
 Sobral.
 
