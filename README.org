@@ -1,0 +1,43 @@
+#+AUTHOR: Manoel Vilela
+
+* Python Chat
+
+Sistema de Chat escrito em Python usando Sockets TCP. Suporta N
+clientes. O sistema de concorrência é gerenciado usando filas e
+threads.
+
+* Instalação & Execução
+
+As dependências podem ser instaladas pelo gerenciador de pacotes do
+python `pip`:
+
+```
+pip install -r requirements.txt
+```
+
+Para executar o sistema, primeiro rode o servidor via:
+
+```
+python server.py
+```
+
+Então rode depois quantos clientes quiser via:
+
+```
+python client.py
+```
+
+
+* Referências
+
++ http://www.science.smith.edu/dftwiki/index.php/PyQt5_Simple_Example
++ https://programtalk.com/python-examples/PyQt5.uic.loadUi/
++ https://docs.python.org/3/howto/sockets.html
++ https://stackoverflow.com/questions/38283705/proper-way-to-quit-exit-a-pyqt-program
++ http://pyqt.sourceforge.net/Docs/PyQt4/qtextbrowser.html
++ https://docs.python.org/3/library/queue.html
++ https://stackoverflow.com/questions/6783194/background-thread-with-qthread-in-pyqt
++ https://www.programcreek.com/python/example/108075/PyQt5.QtWidgets.QShortcut
++ https://stackoverflow.com/questions/23899975/is-it-possible-to-have-pysides-quiloader-act-like-pyqts-uic-loadui
++ https://pythonspot.com/pyqt5-buttons/
++ http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
