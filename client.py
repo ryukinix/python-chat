@@ -18,13 +18,10 @@ class Client(object):
 
     """Define uma classe para se comunicar com o Servidor"""
 
-    def __init__(self,
-                 name='Client',
-                 host=protocol.HOST,
-                 port=protocol.PORT):
+    def __init__(self, name='Client'):
         self.name = name
-        self.host = host
-        self.port = port
+        self.host = protocol.HOST
+        self.port = protocol.PORT
         self.socket = socket.socket(
             socket.AF_INET,      # IPV4
             socket.SOCK_STREAM,  # TCP
@@ -51,6 +48,7 @@ class Client(object):
         m.send(self.socket)
 
     def close(self):
+        self.socket.shutdown(socket.SHUT_RDWR)
         self.socket.close()
 
 
@@ -103,8 +101,8 @@ class ClientGUI(QtWidgets.QMainWindow):
 
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         uic.loadUi('ui/client.ui', self)
         self.shortcut = QtWidgets.QShortcut(
             QtGui.QKeySequence("Ctrl+Return"),  # send message shortcut
@@ -114,13 +112,29 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.send_button.clicked.connect(self.send)
         self.client = Client()
         self.client_thread = ClientController(self.client)
-        msg = "Servidor morreu! Não é possível continuar a aplicação."
+        msg_died = "Servidor morreu! Não é possível continuar a aplicação."
         self.client_thread.server_died_signal.connect(
-            lambda: self.critical_error(msg)
+            lambda: self.critical_error(msg_died)
         )
         self.client_thread.new_message_signal.connect(self.receive)
-        self.destroyed.connect(self.client.close)
         self.message_text.setFocus()
+
+    def closeEvent(self, event):
+        self.client_thread.quit()
+        self.client.close()
+
+    def init_client(self):
+        try:
+            self.client.connect()
+            daddr = protocol.socket_dest_address(self.client.socket)
+            saddr = protocol.socket_source_address(self.client.socket)
+            msg_status = f"Cliente conectado a {daddr} e recebendo resposta em {saddr}"
+            self.client_thread.start()
+            self.statusBar().showMessage(msg_status)
+            self.show()
+        except ConnectionRefusedError:
+            msg_server = "O servidor está desligado! Tente rodar server.py antes."
+            self.critical_error(msg_server)
 
     def send(self):
         """Envia uma mensagem para o servidor como as informações da GUI"""
@@ -145,24 +159,19 @@ class ClientGUI(QtWidgets.QMainWindow):
         dlg.setWindowTitle("Uma merda enorme aconteceu!")
         dlg.setIcon(QtWidgets.QMessageBox.Critical)
         dlg.setText(msg)
-        sys.exit(dlg.exec_())
+        status = dlg.exec_()
+        parent = self.parent()
+        if not parent:
+            sys.exit(status)
+        else:
+            self.close()
 
     @classmethod
     def run(cls):
         """Inicializa a interface do sistema apropriadamente"""
         app = QtWidgets.QApplication(sys.argv)
         main = cls()
-        try:
-            main.client.connect()
-        except ConnectionRefusedError:
-            msg = "O servidor está desligado! Tente rodar server.py antes."
-            main.critical_error(msg)
-        main.show()
-        main.client_thread.start()
-        daddr = protocol.socket_dest_address(main.client.socket)
-        saddr = protocol.socket_source_address(main.client.socket)
-        msg = f"Cliente conectado a {daddr} e recebendo resposta em {saddr}"
-        main.statusBar().showMessage(msg)
+        main.init_client()
         sys.exit(app.exec_())
 
 

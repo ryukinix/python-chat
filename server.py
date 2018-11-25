@@ -17,9 +17,9 @@ class Server(object):
 
     """Servidor do sistema de chat"""
 
-    def __init__(self, host=protocol.HOST, port=protocol.PORT):
-        self.host = host
-        self.port = port
+    def __init__(self):
+        self.host = protocol.HOST
+        self.port = protocol.PORT
         self.socket = socket.socket(
             socket.AF_INET,     # IPV4
             socket.SOCK_STREAM  # TCP
@@ -35,9 +35,16 @@ class Server(object):
         return self.socket.accept()
 
     def close(self):
+        print("Servidor fechado!")
         for client in self.clients:
+            client.shutdown(socket.SHUT_RDWR)
             client.close()
-        self.socket.close()
+        try:
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+        except OSError as e:
+            print("Server: ", e)
+            print("Server: Tentativa de fechar um socket não-conectado!")
 
     def send_broadcast(self, message):
         for client in self.clients:
@@ -88,15 +95,28 @@ class ServerGUI(QtWidgets.QMainWindow):
 
     """Interface gráfica principal do sistema feita em Qt"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         uic.loadUi('ui/server.ui', self)
         self.server = Server()
         self.server_thread = ServerController(self.server)
         self.server_thread.message_signal.connect(self.update_chat_logging)
         self.server_thread.new_client_signal.connect(self.update_list_clients)
         self.server_thread.deleted_client_signal.connect(self.update_list_clients)
-        self.destroyed.connect(self.server.close)
+
+    def closeEvent(self, event):
+        self.server.close()
+
+    def init_server(self):
+        try:
+            self.server.listen()
+            msg = "Recebendo conexões em {}:{}".format(self.server.host,
+                                                       self.server.port)
+            self.statusBar().showMessage(msg)
+            self.server_thread.start()
+            self.show()
+        except OSError:
+            self.busy_port_error()
 
     def update_chat_logging(self):
         msg = self.server.messages.get()
@@ -118,23 +138,14 @@ class ServerGUI(QtWidgets.QMainWindow):
         dlg.setWindowTitle("Uma merda enorme aconteceu!")
         dlg.setIcon(QtWidgets.QMessageBox.Critical)
         dlg.setText(f"A porta {self.server.port} está ocupada! Tente outra.")
-        sys.exit(dlg.exec_())
+        dlg.exec_()
+        self.close()
 
     @classmethod
     def run(cls):
         app = QtWidgets.QApplication(sys.argv)
         main = cls()
-        try:
-            main.server.listen()
-        except OSError:
-            main.busy_port_error()
-
-        main.show()
-        msg = "Recebendo conexões em {}:{}".format(main.server.host,
-                                                   main.server.port)
-        main.statusBar().showMessage(msg)
-        main.server_thread.finished.connect(app.exit)
-        main.server_thread.start()
+        main.init_server()
         sys.exit(app.exec_())
 
 
