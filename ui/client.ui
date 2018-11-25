@@ -76,7 +76,7 @@
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="nome_label">
+    <widget class="QLabel" name="name_label">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -126,6 +126,12 @@
        <width>451</width>
        <height>61</height>
       </rect>
+     </property>
+     <property name="tabChangesFocus">
+      <bool>false</bool>
+     </property>
+     <property name="plainText">
+      <string/>
      </property>
     </widget>
     <widget class="QPushButton" name="send_button">

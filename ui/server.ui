@@ -17,9 +17,9 @@
    <widget class="QListWidget" name="clients_list">
     <property name="geometry">
      <rect>
-      <x>525</x>
+      <x>445</x>
       <y>30</y>
-      <width>101</width>
+      <width>181</width>
       <height>421</height>
      </rect>
     </property>
@@ -29,7 +29,7 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>501</width>
+      <width>421</width>
       <height>421</height>
      </rect>
     </property>
@@ -44,9 +44,9 @@ p, li { white-space: pre-wrap; }
    <widget class="QLabel" name="clients_label">
     <property name="geometry">
      <rect>
-      <x>528</x>
+      <x>448</x>
       <y>-1</y>
-      <width>91</width>
+      <width>171</width>
       <height>31</height>
      </rect>
     </property>
@@ -65,7 +65,7 @@ p, li { white-space: pre-wrap; }
      <rect>
       <x>10</x>
       <y>0</y>
-      <width>501</width>
+      <width>421</width>
       <height>31</height>
      </rect>
     </property>
@@ -99,7 +99,7 @@ font.center {
 }</string>
     </property>
     <property name="text">
-     <string>Chat</string>
+     <string>Chat Logging</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
