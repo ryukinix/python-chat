@@ -1,4 +1,26 @@
+#+STARTUP: showall align
+#+OPTIONS: todo:nil tasks:("IN-PROGRESS" "DONE") tags:nil toc:nil
+#+TITLE: Python Chat: A Messaging Protocol over TCP Sockets
 #+AUTHOR: Manoel Vilela
+#+LANGUAGE: bt-br
+#+LATEX_HEADER: \usepackage[]{babel}
+#+LATEX_HEADER: \usepackage{indentfirst}
+#+LATEX_HEADER: \renewcommand\listingscaption{Código}
+[[./pics/ufc.png]]
+
+#+BEGIN_abstract
+
+Este trabalho explora um sistema de troca de mensagens usando sockets
+TCP na arquitetura cliente-servidor. O sistema é feito na linguagem
+Python e pode receber N clientes. Cada mensagem válida que chega no
+servidor pela porta 9999 é
+enviada para todos os clientes atuais
+conectados. Projeto destinado a trabalho final da disciplina Redes de
+Computadores, 2018.2, orientado por Professor Wendley S. Silva, na
+Universidade Federal do Ceará campus de Sobral.
+
+#+END_abstract
+
 
 * Python Chat
 
@@ -6,38 +28,42 @@ Sistema de Chat escrito em Python usando Sockets TCP. Suporta N
 clientes. O sistema de concorrência é gerenciado usando filas e
 threads.
 
+* Showcase
+
+[[./pics/application.gif]]
+
 * Instalação & Execução
 
-As dependências podem ser instaladas pelo gerenciador de pacotes do
-python `pip`:
+Você deve possuir a versão 3.7 de Python instalado no sistema.
 
-```
+As dependências podem ser instaladas pelo gerenciador de pacotes do
+python ~pip~. O seguinte comando deverá instalar o PyQt5, biblioteca
+wrapper para framework de criação de interfaces gráficas Qt5.:
+
+#+BEGIN_SRC shell
 pip install -r requirements.txt
-```
+#+END_SRC
 
 Para executar o sistema, primeiro rode o servidor via:
 
-```
+#+BEGIN_SRC shell
 python server.py
-```
+#+END_SRC
 
 Então rode depois quantos clientes quiser via:
 
-```
+#+BEGIN_SRC shell
 python client.py
-```
+#+END_SRC
 
 
 * Referências
 
-+ http://www.science.smith.edu/dftwiki/index.php/PyQt5_Simple_Example
-+ https://programtalk.com/python-examples/PyQt5.uic.loadUi/
-+ https://docs.python.org/3/howto/sockets.html
-+ https://stackoverflow.com/questions/38283705/proper-way-to-quit-exit-a-pyqt-program
 + http://pyqt.sourceforge.net/Docs/PyQt4/qtextbrowser.html
-+ https://docs.python.org/3/library/queue.html
-+ https://stackoverflow.com/questions/6783194/background-thread-with-qthread-in-pyqt
-+ https://www.programcreek.com/python/example/108075/PyQt5.QtWidgets.QShortcut
-+ https://stackoverflow.com/questions/23899975/is-it-possible-to-have-pysides-quiloader-act-like-pyqts-uic-loadui
-+ https://pythonspot.com/pyqt5-buttons/
 + http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
++ http://www.science.smith.edu/dftwiki/index.php/PyQt5_Simple_Example
++ https://docs.python.org/3/howto/sockets.html
++ https://docs.python.org/3/library/queue.html
++ https://programtalk.com/python-examples/PyQt5.uic.loadUi/
++ https://pythonspot.com/pyqt5-buttons/
++ https://www.programcreek.com/python/example/108075/PyQt5.QtWidgets.QShortcut
