@@ -98,10 +98,13 @@ class Message:
         """Lê os caracteres de um socket até a quebra de linha"""
         msg = bytes()
         while True:
-            c = socket.recv(1)
+            try:
+                c = socket.recv(1)
+            except OSError:
+                raise ClientClosedError('Cliente morreu inesperadamente!')
             if c == b'\n':
                 break
             elif c == b'':  # quando uma conexão é fechada, recv() retorna um byte vazio
-                raise ClientClosedError('Cliente morreu!')
+                raise ClientClosedError('Cliente fechou a conexão!')
             msg += c
         return msg.decode(Message.encoding)
