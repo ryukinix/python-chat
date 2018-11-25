@@ -16,7 +16,7 @@ from PyQt5 import QtCore
 
 class Client(object):
 
-    """Define uma classe para enviar mensagens para o Servidor"""
+    """Define uma classe para se comunicar com o Servidor"""
 
     def __init__(self,
                  name='Client',
@@ -31,14 +31,14 @@ class Client(object):
         )
         self.messages = queue.Queue()
 
+    def connect(self):
+        """Conecta com o servidor"""
+        return self.socket.connect((self.host, self.port))
+
     def receive_messages(self):
         """Receptor de mensagens do servidor"""
         while True:
             yield protocol.Message.receive(self.socket)
-
-    def connect(self):
-        """Conecta com o servidor"""
-        return self.socket.connect((self.host, self.port))
 
     def send_message(self, message, subject=None):
         """Envia uma mensagem para o servidor"""
@@ -56,6 +56,22 @@ class Client(object):
 
 class ClientController(QtCore.QThread):
 
+    """Thread para rodar em background na interface.
+
+    Realiza leitura das mensagens enviadas pelo servidor
+    e dispara dois sinais:
+
+    + server_died_signal
+    + new_message_signal
+
+    Quando uma nova mensagem é recebida, esta mensagem é inserida
+    na fila thread-safe client.messages. Então é emitido o sinal
+    new_message_signal para que a interface atualize a tela de chat.
+
+    Quando server_died_signal é disparado, a aplicação deve morrer com
+    um aviso de que o servidor foi fechado/desconectado.
+    """
+
     server_died_signal = QtCore.pyqtSignal()
     new_message_signal = QtCore.pyqtSignal()
 
@@ -64,6 +80,7 @@ class ClientController(QtCore.QThread):
         self.client = client
 
     def run(self):
+        """Função principal da thread. Quando executada esse método é iniciado."""
         try:
             for msg in self.client.receive_messages():
                 self.client.messages.put(msg)
@@ -74,6 +91,17 @@ class ClientController(QtCore.QThread):
 
 
 class ClientGUI(QtWidgets.QMainWindow):
+
+    """Interface principal da tela de cliente.
+
+    + ClientGUI.send envia uma nova mensagem para o servidor com os
+      atuais campos preenchidos na interface. O campo mensagem é limpo
+      após essa operação.
+    + ClientGUI.receive consome a mensagem lida pela thread ClientController,
+      disponível na fila self.client.messages
+    + ClientGUI.critical_error exibe uma mensagem de erro crítico
+
+    """
 
     def __init__(self):
         super().__init__()
@@ -86,9 +114,11 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.send_button.clicked.connect(self.send)
         self.client = Client()
         self.client_thread = ClientController(self.client)
-        self.client_thread.server_died_signal.connect(self.critical_error)
+        msg = "Servidor morreu! Não é possível continuar a aplicação."
+        self.client_thread.server_died_signal.connect(
+            lambda: self.critical_error(msg)
+        )
         self.client_thread.new_message_signal.connect(self.receive)
-        self.client_thread.start()
         self.destroyed.connect(self.client.close)
         self.message_text.setFocus()
 
@@ -109,25 +139,29 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.chat_text.moveCursor(QtGui.QTextCursor.End)
         self.chat_text.ensureCursorVisible()
 
-    def critical_error(self):
+    def critical_error(self, msg):
+        """Erro crítico: servidor está morto. Deve finalizar a aplicação com um aviso."""
         dlg = QtWidgets.QMessageBox()
         dlg.setWindowTitle("Uma merda enorme aconteceu!")
         dlg.setIcon(QtWidgets.QMessageBox.Critical)
-        dlg.setText("O servidor está desligado! Tente rodar server.py antes.")
+        dlg.setText(msg)
         sys.exit(dlg.exec_())
 
     @classmethod
     def run(cls):
+        """Inicializa a interface do sistema apropriadamente"""
         app = QtWidgets.QApplication(sys.argv)
         main = cls()
         try:
             main.client.connect()
         except ConnectionRefusedError:
-            main.critical_error()
+            msg = "O servidor está desligado! Tente rodar server.py antes."
+            main.critical_error(msg)
         main.show()
-        saddr = protocol.socket_dest_address(main.client.socket)
-        caddr = protocol.socket_source_address(main.client.socket)
-        msg = f"Cliente conectado a {saddr} e recebendo resposta em {caddr}"
+        main.client_thread.start()
+        daddr = protocol.socket_dest_address(main.client.socket)
+        saddr = protocol.socket_source_address(main.client.socket)
+        msg = f"Cliente conectado a {daddr} e recebendo resposta em {saddr}"
         main.statusBar().showMessage(msg)
         sys.exit(app.exec_())
 
