@@ -1,6 +1,6 @@
 #+STARTUP: showall align
 #+OPTIONS: todo:nil tasks:("IN-PROGRESS" "DONE") tags:nil toc:nil
-#+TITLE: Python Chat: A Messaging Protocol over TCP Sockets
+#+TITLE: Python Chat: A Messaging Protocol over TCP
 #+AUTHOR: Manoel Vilela
 #+LANGUAGE: bt-br
 #+LATEX_HEADER: \usepackage[]{babel}
