@@ -108,6 +108,7 @@ class ServerGUI(QtWidgets.QMainWindow):
         for client in self.server.clients:
             addr = protocol.socket_dest_address(client)
             item = QtWidgets.QListWidgetItem(addr)
+            item.setTextAlignment(QtCore.Qt.AlignHCenter)
             self.clients_list.addItem(item)
 
     def busy_port_error(self):
