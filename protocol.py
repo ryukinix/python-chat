@@ -49,6 +49,14 @@ class Message:
                            for k, v in vars(self).items()])
         return f'Message({attrs})'
 
+    def __str__(self):
+        msg = ('-\n'
+               'Cliente: {client_name}\tData: {date}\n'
+               'Assunto: {subject}\n'
+               'Mensagem: {message}\n'
+               '-')
+        return msg.format_map(vars(self))
+
     def to_bytes(self) -> bytes:
         """Transforma a mensagem numa codificação JSON e então em bytes.
         """
