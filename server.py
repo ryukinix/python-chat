@@ -142,7 +142,8 @@ class ServerGUI(QtWidgets.QMainWindow):
         if not self.server.closed:
             self.server.close_clients()
             self.server.shutdown()
-            self.server_thread.wait()
+            if sys.platform == 'linux':
+                self.server_thread.wait()
             self.server.close()
             del self.server.socket
         parent = self.parent()

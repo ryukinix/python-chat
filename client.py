@@ -21,6 +21,8 @@ class Client(object):
 
     def __init__(self, name='Client'):
         self.name = name
+        if protocol.HOST == '0.0.0.0':
+            self.host = '127.0.0.1'
         self.host = protocol.HOST
         self.port = protocol.PORT
         self.socket = socket.socket(
