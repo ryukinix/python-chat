@@ -39,7 +39,6 @@ class Server(object):
         print("Servidor: Servidor sendo fechado!")
         for client in self.clients:
             client.shutdown(socket.SHUT_RDWR)
-            client.close()
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
@@ -92,7 +91,8 @@ class ServerController(QtCore.QThread):
                 self.server.send_broadcast(msg)
                 self.message_signal.emit()
             except protocol.ClientClosedError:
-                print('Cliente fechou a conexão: ', client.getpeername())
+                addr = protocol.socket_dest_address(client)
+                print('Servidor: Cliente fechou a conexão: ', addr)
                 self.server.clients.remove(client)
                 client.close()
                 self.deleted_client_signal.emit()

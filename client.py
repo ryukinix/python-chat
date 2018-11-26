@@ -76,11 +76,11 @@ class ClientController(QtCore.QThread):
 
     server_died_signal = QtCore.pyqtSignal()
     new_message_signal = QtCore.pyqtSignal()
-    closed = False
 
     def __init__(self, client):
         super().__init__()
         self.client = client
+        self.closed = False
 
     def run(self):
         """Função principal da thread. Quando executada esse método é iniciado."""
