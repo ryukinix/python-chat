@@ -1,7 +1,6 @@
 # coding: utf-8
 
 # standard library
-import protocol
 import socket
 import sys
 import queue
@@ -10,8 +9,10 @@ from datetime import datetime
 # PyQt5 imports
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
-from PyQt5 import uic
 from PyQt5 import QtCore
+
+import protocol
+import gui.client
 
 
 class Client(object):
@@ -109,13 +110,14 @@ class ClientGUI(QtWidgets.QMainWindow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        uic.loadUi('ui/client.ui', self)
-        self.shortcut = QtWidgets.QShortcut(
+        self.ui = gui.client.Ui_ClientWindow()
+        self.ui.setupUi(self)
+        self.ui.shortcut = QtWidgets.QShortcut(
             QtGui.QKeySequence("Ctrl+Return"),  # send message shortcut
             self
         )
-        self.shortcut.activated.connect(self.send)
-        self.send_button.clicked.connect(self.send)
+        self.ui.shortcut.activated.connect(self.send)
+        self.ui.send_button.clicked.connect(self.send)
         self.client = Client()
         self.client_thread = ClientController(self.client)
         msg_died = "Servidor morreu! Não é possível continuar a aplicação."
@@ -123,7 +125,7 @@ class ClientGUI(QtWidgets.QMainWindow):
             lambda: self.critical_error(msg_died)
         )
         self.client_thread.new_message_signal.connect(self.receive)
-        self.message_text.setFocus()
+        self.ui.message_text.setFocus()
 
     def closeEvent(self, event):
         self.client_thread.closed = True
@@ -147,10 +149,10 @@ class ClientGUI(QtWidgets.QMainWindow):
 
     def send(self):
         """Envia uma mensagem para o servidor como as informações da GUI"""
-        subject = self.subject_text.text()
-        message = self.message_text.toPlainText()
-        name = self.name_text.text()
-        self.message_text.clear()  # clean message_text field
+        subject = self.ui.subject_text.text()
+        message = self.ui.message_text.toPlainText()
+        name = self.ui.name_text.text()
+        self.ui.message_text.clear()  # clean message_text field
         self.client.name = name
         if message:
             self.client.send_message(message, subject)
@@ -158,9 +160,9 @@ class ClientGUI(QtWidgets.QMainWindow):
     def receive(self):
         """Recebe uma mensagem do servidor e atualiza a interface."""
         msg = self.client.messages.get()
-        self.chat_text.insertPlainText(str(msg))
-        self.chat_text.moveCursor(QtGui.QTextCursor.End)
-        self.chat_text.ensureCursorVisible()
+        self.ui.chat_text.insertPlainText(str(msg))
+        self.ui.chat_text.moveCursor(QtGui.QTextCursor.End)
+        self.ui.chat_text.ensureCursorVisible()
 
     def critical_error(self, msg):
         """Erro crítico: servidor está morto. Deve finalizar a aplicação com um aviso."""
