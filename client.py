@@ -131,6 +131,7 @@ class ClientGUI(QtWidgets.QMainWindow):
         parent = self.parent()
         if not parent:
             sys.exit()
+        self.client_thread.closed = False
 
     def init_client(self):
         try:
