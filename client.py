@@ -48,8 +48,12 @@ class Client(object):
         m.send(self.socket)
 
     def close(self):
-        self.socket.shutdown(socket.SHUT_RDWR)
-        self.socket.close()
+        try:
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+        except OSError:
+            # print("Cliente: Tentativa de desligar um socket não conectado.")
+            pass
 
 
 class ClientController(QtCore.QThread):
@@ -72,6 +76,7 @@ class ClientController(QtCore.QThread):
 
     server_died_signal = QtCore.pyqtSignal()
     new_message_signal = QtCore.pyqtSignal()
+    closed = False
 
     def __init__(self, client):
         super().__init__()
@@ -84,8 +89,9 @@ class ClientController(QtCore.QThread):
                 self.client.messages.put(msg)
                 self.new_message_signal.emit()
         except protocol.ClientClosedError:
-            print("Servidor morreu!")
-            self.server_died_signal.emit()
+            if not self.closed:
+                print("Cliente: Servidor morreu!")
+                self.server_died_signal.emit()
 
 
 class ClientGUI(QtWidgets.QMainWindow):
@@ -120,8 +126,11 @@ class ClientGUI(QtWidgets.QMainWindow):
         self.message_text.setFocus()
 
     def closeEvent(self, event):
-        self.client_thread.quit()
+        self.client_thread.closed = True
         self.client.close()
+        parent = self.parent()
+        if not parent:
+            sys.exit()
 
     def init_client(self):
         try:
@@ -159,12 +168,8 @@ class ClientGUI(QtWidgets.QMainWindow):
         dlg.setWindowTitle("Uma merda enorme aconteceu!")
         dlg.setIcon(QtWidgets.QMessageBox.Critical)
         dlg.setText(msg)
-        status = dlg.exec_()
-        parent = self.parent()
-        if not parent:
-            sys.exit(status)
-        else:
-            self.close()
+        dlg.exec_()
+        self.close()
 
     @classmethod
     def run(cls):

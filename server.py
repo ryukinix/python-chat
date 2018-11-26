@@ -26,6 +26,7 @@ class Server(object):
         )
         self.clients = []              # socket de clientes no sistema
         self.messages = queue.Queue()  # fila de mensagens
+        self.closed = False
 
     def listen(self):
         self.socket.bind((self.host, self.port))
@@ -35,16 +36,18 @@ class Server(object):
         return self.socket.accept()
 
     def close(self):
-        print("Servidor fechado!")
+        print("Servidor: Servidor sendo fechado!")
         for client in self.clients:
             client.shutdown(socket.SHUT_RDWR)
             client.close()
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
-        except OSError as e:
-            print("Server: ", e)
-            print("Server: Tentativa de fechar um socket não-conectado!")
+        except OSError:
+            pass
+            # print("Server: ", e)
+            # print("Server: Tentativa de fechar um socket não-conectado!")
+        self.closed = True
 
     def send_broadcast(self, message):
         for client in self.clients:
@@ -66,12 +69,17 @@ class ServerController(QtCore.QThread):
     def run(self):
         """Aceita conexões externas e dispara threads para leitura de mensagens"""
         while True:
-            client, addr = self.server.accept()
-            print("Cliente conectado: ", addr)
-            self.server.clients.append(client)
-            self.new_client_signal.emit()
-            t = threading.Thread(target=self.read_message, args=(client,))
-            t.start()
+            try:
+                client, addr = self.server.accept()
+                addr_str = "{}:{}".format(*addr)
+                print("Servidor: Cliente conectado em ", addr_str)
+                self.server.clients.append(client)
+                self.new_client_signal.emit()
+                t = threading.Thread(target=self.read_message, args=(client,))
+                t.start()
+            except OSError:
+                self.finished.emit()
+                break
 
     def read_message(self, client):
         """Lê mensagens do cliente e coloca na fila Server.messages"""
@@ -103,9 +111,14 @@ class ServerGUI(QtWidgets.QMainWindow):
         self.server_thread.message_signal.connect(self.update_chat_logging)
         self.server_thread.new_client_signal.connect(self.update_list_clients)
         self.server_thread.deleted_client_signal.connect(self.update_list_clients)
+        self.server_thread.finished.connect(self.close)
 
     def closeEvent(self, event):
-        self.server.close()
+        if not self.server.closed:
+            self.server.close()
+        parent = self.parent()
+        if not parent:
+            sys.exit()
 
     def init_server(self):
         try:
