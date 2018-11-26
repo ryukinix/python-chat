@@ -1,27 +1,27 @@
 import sys
 
+from PyQt5 import QtWidgets
+
 import client
 import server
 import protocol
-
-
-from PyQt5 import QtWidgets
-from PyQt5 import uic
+import gui.main
 
 
 class MainGUI(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
-        uic.loadUi('ui/main.ui', self)
-        self.client_button.clicked.connect(self.open_client)
-        self.server_button.clicked.connect(self.open_server)
-        self.host_text.setText(protocol.HOST)
-        self.port_text.setText(str(protocol.PORT))
+        self.ui = gui.main.Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.ui.client_button.clicked.connect(self.open_client)
+        self.ui.server_button.clicked.connect(self.open_server)
+        self.ui.host_text.setText(protocol.HOST)
+        self.ui.port_text.setText(str(protocol.PORT))
 
     def update_host_port(self):
-        protocol.HOST = self.host_text.text()
-        protocol.PORT = int(self.port_text.text())
+        protocol.HOST = self.ui.host_text.text()
+        protocol.PORT = int(self.ui.port_text.text())
 
     def open_server(self):
         self.update_host_port()
