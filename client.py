@@ -21,9 +21,10 @@ class Client(object):
 
     def __init__(self, name='Client'):
         self.name = name
-        self.port = protocol.PORT
+        self.host = protocol.HOST
         if self.host == '0.0.0.0':
             self.host = '127.0.0.1'
+        self.port = protocol.PORT
         self.socket = socket.socket(
             socket.AF_INET,      # IPV4
             socket.SOCK_STREAM,  # TCP
