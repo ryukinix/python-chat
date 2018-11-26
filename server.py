@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import protocol
 import socket
 import sys
 import queue
@@ -10,9 +9,10 @@ import threading
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-from PyQt5 import uic
 from dataclasses import dataclass
 
+import protocol
+import gui.server
 
 @dataclass
 class NamedSocket:
@@ -102,7 +102,6 @@ class ServerController(QtCore.QThread):
                 break
         for t in threads:
             t.join()
-        print("ServerController.run finished")
 
     def read_message(self, client):
         """Lê mensagens do cliente e coloca na fila Server.messages"""
@@ -117,12 +116,12 @@ class ServerController(QtCore.QThread):
                 self.message_signal.emit()
             except protocol.ClientClosedError:
                 addr = protocol.socket_dest_address(client.socket)
-                print('Servidor: Cliente fechou a conexão: ', client.name, addr)
+                client_id = '{}@{}'.format(client.name, addr)
+                print('Servidor: Cliente fechou a conexão: ', client_id)
                 self.server.clients.remove(client)
                 client.socket.close()
                 self.deleted_client_signal.emit()
                 break
-        print("ServerController.read_message finished for ", client)
 
 
 class ServerGUI(QtWidgets.QMainWindow):
@@ -131,7 +130,8 @@ class ServerGUI(QtWidgets.QMainWindow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        uic.loadUi('ui/server.ui', self)
+        self.ui = gui.server.Ui_ServerWindow()
+        self.ui.setupUi(self)
         self.server = Server()
         self.server_thread = ServerController(self.server)
         self.server_thread.message_signal.connect(self.update_chat_logging)
@@ -162,19 +162,19 @@ class ServerGUI(QtWidgets.QMainWindow):
 
     def update_chat_logging(self):
         msg = self.server.messages.get()
-        self.chat_text.insertPlainText(str(msg))
-        self.chat_text.moveCursor(QtGui.QTextCursor.End)
-        self.chat_text.ensureCursorVisible()
+        self.ui.chat_text.insertPlainText(str(msg))
+        self.ui.chat_text.moveCursor(QtGui.QTextCursor.End)
+        self.ui.chat_text.ensureCursorVisible()
 
     def update_list_clients(self):
-        self.clients_list.clear()
+        self.ui.clients_list.clear()
         for client in self.server.clients:
             client_id = protocol.socket_dest_address(client.socket)
             if client.name:
                 client_id = client.name + '@' + client_id
             item = QtWidgets.QListWidgetItem(client_id)
             item.setTextAlignment(QtCore.Qt.AlignHCenter)
-            self.clients_list.addItem(item)
+            self.ui.clients_list.addItem(item)
 
     def busy_port_error(self):
         """Message box de erro: porta ocupada"""
