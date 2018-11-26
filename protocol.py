@@ -59,7 +59,7 @@ class Message:
         """Transforma a mensagem numa codificação JSON e então em bytes.
         """
         attrs = vars(self)
-        json_string = json.dumps(attrs, ensure_ascii=False)
+        json_string = json.dumps(attrs, ensure_ascii=False) + '\n'
         json_encoded = json_string.encode(Message.encoding)
         json_bytes = bytes(json_encoded)
         return json_bytes
