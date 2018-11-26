@@ -11,6 +11,13 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import uic
+from dataclasses import dataclass
+
+
+@dataclass
+class NamedSocket:
+    socket: socket.socket
+    name: str
 
 
 class Server(object):
@@ -35,10 +42,12 @@ class Server(object):
     def accept(self):
         return self.socket.accept()
 
+    def close_clients(self):
+        for client in self.clients:
+            client.socket.shutdown(socket.SHUT_RDWR)
+
     def close(self):
         print("Servidor: Servidor sendo fechado!")
-        for client in self.clients:
-            client.shutdown(socket.SHUT_RDWR)
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
@@ -50,7 +59,7 @@ class Server(object):
 
     def send_broadcast(self, message):
         for client in self.clients:
-            message.send(client)
+            message.send(client.socket)
 
 
 class ServerController(QtCore.QThread):
@@ -67,15 +76,18 @@ class ServerController(QtCore.QThread):
 
     def run(self):
         """Aceita conexões externas e dispara threads para leitura de mensagens"""
+        threads = []
         while True:
             try:
                 client, addr = self.server.accept()
                 addr_str = "{}:{}".format(*addr)
                 print("Servidor: Cliente conectado em ", addr_str)
-                self.server.clients.append(client)
+                c = NamedSocket(client, None)
+                self.server.clients.append(c)
                 self.new_client_signal.emit()
-                t = threading.Thread(target=self.read_message, args=(client,))
+                t = threading.Thread(target=self.read_message, args=(c,))
                 t.start()
+                threads.append(t)
             except OSError:
                 self.finished.emit()
                 break
@@ -84,17 +96,18 @@ class ServerController(QtCore.QThread):
         """Lê mensagens do cliente e coloca na fila Server.messages"""
         while True:
             try:
-                msg = protocol.Message.receive(client)
-                # print('Mensagem recebida de ', client)
-                # print('Conteudo: ', msg)
+                msg = protocol.Message.receive(client.socket)
+                if client.name != msg.client_name:
+                    client.name = msg.client_name
+                    self.new_client_signal.emit()
                 self.server.messages.put(msg)
                 self.server.send_broadcast(msg)
                 self.message_signal.emit()
             except protocol.ClientClosedError:
-                addr = protocol.socket_dest_address(client)
-                print('Servidor: Cliente fechou a conexão: ', addr)
+                addr = protocol.socket_dest_address(client.socket)
+                print('Servidor: Cliente fechou a conexão: ', client.name, addr)
                 self.server.clients.remove(client)
-                client.close()
+                client.socket.close()
                 self.deleted_client_signal.emit()
                 break
 
@@ -115,6 +128,7 @@ class ServerGUI(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         if not self.server.closed:
+            self.server.close_clients()
             self.server.close()
         parent = self.parent()
         if not parent:
@@ -140,8 +154,10 @@ class ServerGUI(QtWidgets.QMainWindow):
     def update_list_clients(self):
         self.clients_list.clear()
         for client in self.server.clients:
-            addr = protocol.socket_dest_address(client)
-            item = QtWidgets.QListWidgetItem(addr)
+            client_id = protocol.socket_dest_address(client.socket)
+            if client.name:
+                client_id = client.name + '@' + client_id
+            item = QtWidgets.QListWidgetItem(client_id)
             item.setTextAlignment(QtCore.Qt.AlignHCenter)
             self.clients_list.addItem(item)
 
