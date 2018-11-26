@@ -101,3 +101,4 @@ python client.py
 + https://programtalk.com/python-examples/PyQt5.uic.loadUi/
 + https://pythonspot.com/pyqt5-buttons/
 + https://www.programcreek.com/python/example/108075/PyQt5.QtWidgets.QShortcut
++ https://stackoverflow.com/questions/6380057/python-binding-socket-address-already-in-use
