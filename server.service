@@ -1,0 +1,11 @@
+[Unit]
+Description=Python Chat Server
+           
+[Service]
+WorkingDirectory=/root/python-chat
+Type=forking
+ExecStart=/usr/bin/python3 server_headless.py
+Restart=always
+           
+[Install]
+WantedBy=default.target
