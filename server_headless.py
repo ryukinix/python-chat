@@ -3,16 +3,21 @@
 import socket
 import queue
 import threading
-
-# PyQt5 imports
-from dataclasses import dataclass
+import sys
 
 import protocol
 
-@dataclass
-class NamedSocket:
-    socket: socket.socket
-    name: str
+if sys.version >= (3, 7):
+    from dataclasses import dataclass
+    @dataclass
+    class NamedSocket:
+        socket: socket.socket
+        name: str
+else:
+    class NamedSocket:
+        def __init__(self, socket, name):
+            self.socket = socket
+            self.name = name
 
 
 class Server(object):
