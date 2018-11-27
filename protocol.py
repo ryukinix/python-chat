@@ -1,8 +1,8 @@
 # coding: utf-8
 
 import json
-
-HOST = '127.0.0.1'
+from datetime import datetime
+HOST = '46.101.221.122'
 PORT = 9999
 
 
@@ -48,11 +48,8 @@ class Message:
         return f'Message({attrs})'
 
     def __str__(self):
-        msg = ('-\n'
-               'Cliente: {client_name}\tData: {date}\n'
-               'Assunto: {subject}\n'
-               'Mensagem: {message}\n'
-               '-\n')
+        self.date = datetime.strptime(self.date, '%d/%m/%Y %X').strftime('%H:%M:%S')
+        msg = '|{date}| [{client_name}]: {message}\n'
         return msg.format_map(vars(self))
 
     def to_bytes(self) -> bytes:
