@@ -16,7 +16,7 @@ class InvalidRequestError(Exception):
 
 class Message:
 
-    """Protocolo compartilhado de mensagem cliente-servidor.
+    '''Protocolo compartilhado de mensagem cliente-servidor.
 
     Antes de enviar uma mensagem pelo Socket TCP é necessário
     converter todo o conteúdo em bytes codificada de tal
@@ -27,12 +27,12 @@ class Message:
 
     Content-length: int
     {
-       'client_name': 'str',
-       'subject': 'str',
-       'message': 'str',
-       'date': 'str'
+       "client_name": "str",
+       "subject": "str",
+       "message": "str",
+       "date": "str"
     }
-    """
+   '''
 
     encoding = 'utf-8'
 
