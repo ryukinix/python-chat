@@ -3,7 +3,7 @@ Description=Python Chat Server
            
 [Service]
 WorkingDirectory=/root/python-chat
-Type=forking
+Type=simple
 ExecStart=/usr/bin/python3 server_headless.py
 Restart=always
            
