@@ -117,12 +117,9 @@ python client.py
 
 * Referências
 
-+ http://pyqt.sourceforge.net/Docs/PyQt4/qtextbrowser.html
 + http://pyqt.sourceforge.net/Docs/PyQt5/designer.html
 + http://www.science.smith.edu/dftwiki/index.php/PyQt5_Simple_Example
 + https://docs.python.org/3/howto/sockets.html
 + https://docs.python.org/3/library/queue.html
-+ https://programtalk.com/python-examples/PyQt5.uic.loadUi/
 + https://pythonspot.com/pyqt5-buttons/
 + https://www.programcreek.com/python/example/108075/PyQt5.QtWidgets.QShortcut
-+ https://stackoverflow.com/questions/6380057/python-binding-socket-address-already-in-use
