@@ -57,11 +57,35 @@ Esse protocolo é definido no arquivo [[./protocol.py]] na classe
 arquivo, com os valores de 127.0.0.1 e 9999.
 
 Os arquivos [[./client.py]] e [[./server.py]] contém ambos os códigos destinados ao
-cliente e servidor com o código integrado para a interface gráfica.
+cliente e servidor já integrado com a interface gráfica.
 
 O sistema de concorrência é gerenciado usando filas e threads. O
-framework para criação de interfaces é o Qt.
+framework para criação de interfaces é o Qt, especificamente PyQt5.
 
+Uma tela gráfica adicional é escrita em [[./main.py]] para disparar N
+servidores e N clientes parametrizados por host e porta, a fim
+simplificando o teste. A comunicação entre todos servidores e clientes
+por esta tela continua sendo por Socket TCP com o protocol acima definido.
+
+* Comunicação entre Servidor e Cliente
+
+Quando o servidor é iniciado, ele terá duas threads principais: a da
+interface gráfica e outra thread de controle do Socket que ouve na
+porta 9999. Essa thread de controle do Socket esperará novos clientes
+se conectarem e assim que se conectarem, para cada novo cliente uma
+nova thread será disparada para esperar as mensagens desse novo
+cliente.
+
+Todas as mensagens novas no servidor são salvas numa fila thread-safe,
+alimentadas em cada uma das threads de leitura de mensagens e
+consumida de forma sincronizada na interface gráfica. Adicionalmente,
+quando uma mensagem é consumida, é enviado uma espécie de `broadcast`
+para todos os clientes conectados. Dessa maneira os clientes também
+conseguiram receber mensagens de outros clientes.
+
+#+ATTR_LATEX: :placement [H]
+#+CAPTION: Modelo de comunicação entre servidor e cliente.
+[[./pics/PythonChat.png]]
 
 * Showcase :NO_EXPORT:
 
