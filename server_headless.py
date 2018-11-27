@@ -116,7 +116,6 @@ class ServerController(threading.Thread):
                 print('Servidor: Cliente fechou a conexão: ', client_id)
                 self.server.clients.remove(client)
                 client.socket.close()
-                self.deleted_client_signal.emit()
                 break
 
 
