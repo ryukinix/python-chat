@@ -1,12 +1,16 @@
 # coding: utf-8
 
 import json
-from datetime import datetime
-HOST = '46.101.221.122'
+
+HOST = '127.0.0.1'
 PORT = 9999
 
 
 class ClientClosedError(Exception):
+    pass
+
+
+class InvalidRequestError(Exception):
     pass
 
 
@@ -48,8 +52,11 @@ class Message:
         return f'Message({attrs})'
 
     def __str__(self):
-        self.date = datetime.strptime(self.date, '%d/%m/%Y %X').strftime('%H:%M:%S')
-        msg = '|{date}| [{client_name}]: {message}\n'
+        msg = ('-\n'
+               'Cliente: {client_name}\tData: {date}\n'
+               'Assunto: {subject}\n'
+               'Mensagem: {message}\n'
+               '-\n')
         return msg.format_map(vars(self))
 
     def to_bytes(self) -> bytes:
@@ -74,12 +81,16 @@ class Message:
     def receive(cls, socket):
         """Recebe uma mensagem e decodifica a partir de um socket."""
         header = cls.readline(socket)
-        attr, value = header.split(':')
-        if attr != 'Content-length':
-            raise ValueError("Invalid header: expected Content-length, got " + attr)
-        length = int(value)
-        msg = socket.recv(length)
-        return cls.from_bytes(msg)
+        try:
+            attr, value = header.split(':')
+            if attr != 'Content-length':
+                raise InvalidRequestError("Invalid header: expected Content-length, got " + attr)
+            length = int(value)
+            msg = socket.recv(length)
+            return cls.from_bytes(msg)
+        except Exception as e:
+            print("protocol.Message.receive exception: ", e)
+            raise InvalidRequestError("Invalid Request!")
 
     def send(self, socket):
         """Envia uma mensagem codificada para um determinado socket"""
