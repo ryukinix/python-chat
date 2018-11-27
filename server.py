@@ -4,6 +4,7 @@ import socket
 import sys
 import queue
 import threading
+from datetime import datetime
 
 # PyQt5 imports
 from PyQt5 import QtWidgets

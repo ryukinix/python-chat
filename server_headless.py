@@ -119,6 +119,12 @@ class ServerController(threading.Thread):
                 addr = protocol.socket_dest_address(client.socket)
                 client_id ='{}@{}'.format(client.name, addr)
                 print('Servidor: Cliente mandou requisição inválida: ', client_id)
+                protocol.Message(
+                    "@SERVER",
+                    "InvalidRequestError",
+                    "Ta de brinqueixon comigo porra?",
+                    "XXXX"
+                ).send(client.socket)
                 break
         client.socket.close()
         self.server.clients.remove(client)
