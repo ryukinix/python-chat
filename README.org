@@ -36,10 +36,10 @@ comunicação é a 9999.
 #+BEGIN_SRC text
   Content-length: int
   {
-     'client_name': 'str',
-     'subject': 'str',
-     'message': 'str',
-     'date': 'str'
+     "client_name": "str",
+     "subject": "str",
+     "message": "str",
+     "date": "str"
   }'
 #+END_SRC
 
@@ -72,16 +72,15 @@ por esta tela continua sendo por Socket TCP com o protocol acima definido.
 Quando o servidor é iniciado, ele terá duas threads principais: a da
 interface gráfica e outra thread de controle do Socket que ouve na
 porta 9999. Essa thread de controle do Socket esperará novos clientes
-se conectarem e assim que se conectarem, para cada novo cliente uma
-nova thread será disparada para esperar as mensagens desse novo
-cliente.
+se conectarem e para cada novo cliente conectado uma nova thread será
+disparada para esperar as mensagens desse novo cliente.
 
 Todas as mensagens novas no servidor são salvas numa fila thread-safe,
 alimentadas em cada uma das threads de leitura de mensagens e
 consumida de forma sincronizada na interface gráfica. Adicionalmente,
-quando uma mensagem é consumida, é enviado uma espécie de `broadcast`
+quando uma mensagem é consumida, é enviado uma espécie de /broadcast/
 para todos os clientes conectados. Dessa maneira os clientes também
-conseguiram receber mensagens de outros clientes.
+conseguirão receber mensagens de outros clientes.
 
 #+ATTR_LATEX: :placement [H]
 #+CAPTION: Modelo de comunicação entre servidor e cliente.
@@ -93,7 +92,7 @@ conseguiram receber mensagens de outros clientes.
 
 * Instalação & Execução
 
-Você deve possuir a versão 3.7 de Python instalado no sistema.As
+Você deve possuir a versão 3.7 de Python instalado no sistema. As
 dependências podem ser instaladas pelo gerenciador de pacotes do
 python ~pip~. O seguinte comando deverá instalar o PyQt5, biblioteca
 wrapper do framework Qt5 para criação de interfaces gráficas:

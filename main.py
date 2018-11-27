@@ -1,3 +1,13 @@
+# coding: utf-8
+
+"""
+Tela de integração com server.py e client.py.
+
+Permite disparar N servidores e N clientes, onde HOST e PORT
+é parametrizado.
+"""
+
+
 import sys
 
 from PyQt5 import QtWidgets

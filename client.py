@@ -24,6 +24,8 @@ class Client(object):
         self.host = protocol.HOST
         if self.host == '0.0.0.0':
             self.host = '127.0.0.1'
+        elif self.host.isalpha():
+            self.host = socket.gethostbyaddr(self.host)
         self.port = protocol.PORT
         self.socket = socket.socket(
             socket.AF_INET,      # IPV4
