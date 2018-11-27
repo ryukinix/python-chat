@@ -10,6 +10,10 @@ class ClientClosedError(Exception):
     pass
 
 
+class InvalidRequestError(Exception):
+    pass
+
+
 class Message:
 
     """Protocolo compartilhado de mensagem cliente-servidor.
@@ -77,12 +81,16 @@ class Message:
     def receive(cls, socket):
         """Recebe uma mensagem e decodifica a partir de um socket."""
         header = cls.readline(socket)
-        attr, value = header.split(':')
-        if attr != 'Content-length':
-            raise ValueError("Invalid header: expected Content-length, got " + attr)
-        length = int(value)
-        msg = socket.recv(length)
-        return cls.from_bytes(msg)
+        try:
+            attr, value = header.split(':')
+            if attr != 'Content-length':
+                raise InvalidRequestError("Invalid header: expected Content-length, got " + attr)
+            length = int(value)
+            msg = socket.recv(length)
+            return cls.from_bytes(msg)
+        except Exception as e:
+            print("protocol.Message.receive exception: ", e)
+            raise InvalidRequestError("Invalid Request!")
 
     def send(self, socket):
         """Envia uma mensagem codificada para um determinado socket"""

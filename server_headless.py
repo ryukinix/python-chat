@@ -114,9 +114,14 @@ class ServerController(threading.Thread):
                 addr = protocol.socket_dest_address(client.socket)
                 client_id = '{}@{}'.format(client.name, addr)
                 print('Servidor: Cliente fechou a conexão: ', client_id)
-                self.server.clients.remove(client)
-                client.socket.close()
                 break
+            except protocol.InvalidRequestError:
+                addr = protocol.socket_dest_address(client.socket)
+                client_id ='{}@{}'.format(client.name, addr)
+                print('Servidor: Cliente mandou requisição inválida: ', client_id)
+                break
+        client.socket.close()
+        self.server.clients.remove(client)
 
 
 def main():
