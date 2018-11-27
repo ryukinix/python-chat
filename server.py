@@ -139,7 +139,7 @@ class ServerController(QtCore.QThread):
                     "XXXX"
                 ).send(client.socket)
                 break
-
+        client.socket.shutdown(socket.SHUT_RDWR)
         client.socket.close()
         self.server.clients.remove(client)
         self.deleted_client_signal.emit()
