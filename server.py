@@ -9,15 +9,18 @@ import threading
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5 import QtCore
-from dataclasses import dataclass
 
 import protocol
 import gui.server
 
-@dataclass
+
 class NamedSocket:
-    socket: socket.socket
-    name: str
+
+    """Um socket com um nome associado"""
+
+    def __init__(self, socket, name):
+        self.socket = socket
+        self.name = name
 
 
 class Server(object):
@@ -41,23 +44,28 @@ class Server(object):
         self.closed = False
 
     def listen(self):
+        """Prepara para ouvir conexões no host:port configurado"""
         self.socket.bind((self.host, self.port))
         self.socket.listen(5)
 
     def accept(self):
+        """Espera e aceita uma nova conexão no socket"""
         return self.socket.accept()
 
-    def close_clients(self):
+    def shutdown_clientes(self):
+        """Desliga conexão com os clientes"""
         for client in self.clients:
             client.socket.shutdown(socket.SHUT_RDWR)
 
     def shutdown(self):
+        """Desliga conexão do socket no sistema operacional"""
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
         except OSError:
             pass
 
     def close(self):
+        """Fecha socket do servidor"""
         print("Servidor: Servidor sendo fechado!")
         try:
             self.socket.close()
@@ -68,6 +76,7 @@ class Server(object):
         self.closed = True
 
     def send_broadcast(self, message):
+        """Envia mensagem para todos os clientes conectados"""
         for client in self.clients:
             message.send(client.socket)
 
@@ -118,10 +127,22 @@ class ServerController(QtCore.QThread):
                 addr = protocol.socket_dest_address(client.socket)
                 client_id = '{}@{}'.format(client.name, addr)
                 print('Servidor: Cliente fechou a conexão: ', client_id)
-                self.server.clients.remove(client)
-                client.socket.close()
-                self.deleted_client_signal.emit()
                 break
+            except protocol.InvalidRequestError:
+                addr = protocol.socket_dest_address(client.socket)
+                client_id ='{}@{}'.format(client.name, addr)
+                print('Servidor: Cliente mandou requisição inválida: ', client_id)
+                protocol.Message(
+                    "@SERVER",
+                    "InvalidRequestError",
+                    "Ta de brinqueixon comigo porra?",
+                    "XXXX"
+                ).send(client.socket)
+                break
+
+        client.socket.close()
+        self.server.clients.remove(client)
+        self.deleted_client_signal.emit()
 
 
 class ServerGUI(QtWidgets.QMainWindow):
@@ -139,18 +160,19 @@ class ServerGUI(QtWidgets.QMainWindow):
         self.server_thread.deleted_client_signal.connect(self.update_list_clients)
 
     def closeEvent(self, event):
+        """Evento de close da janela: fecha o servidor apropriadamente"""
         if not self.server.closed:
-            self.server.close_clients()
+            self.server.shutdown_clientes()
             self.server.shutdown()
-            if sys.platform == 'linux':
-                self.server_thread.wait()
             self.server.close()
             del self.server.socket
         parent = self.parent()
         if not parent:
+            # se não tiver janela pai, pode fechar a aplicação também.
             sys.exit()
 
     def init_server(self):
+        """Inicializa servidor e thread do ServerController"""
         try:
             self.server.listen()
             msg = "Recebendo conexões em {}:{}".format(self.server.host,
@@ -162,12 +184,14 @@ class ServerGUI(QtWidgets.QMainWindow):
             self.busy_port_error()
 
     def update_chat_logging(self):
+        """Atualiza tela de chat logging"""
         msg = self.server.messages.get()
         self.ui.chat_text.insertPlainText(str(msg))
         self.ui.chat_text.moveCursor(QtGui.QTextCursor.End)
         self.ui.chat_text.ensureCursorVisible()
 
     def update_list_clients(self):
+        """Atualiza lista de clientes"""
         self.ui.clients_list.clear()
         for client in self.server.clients:
             client_id = protocol.socket_dest_address(client.socket)
@@ -188,6 +212,7 @@ class ServerGUI(QtWidgets.QMainWindow):
 
     @classmethod
     def run(cls):
+        """Roda a aplicaçao como tela principal"""
         app = QtWidgets.QApplication(sys.argv)
         main = cls()
         main.init_server()
