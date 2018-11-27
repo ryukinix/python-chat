@@ -7,7 +7,7 @@ import sys
 
 import protocol
 
-if sys.version >= (3, 7):
+if sys.version_info >= (3, 7):
     from dataclasses import dataclass
     @dataclass
     class NamedSocket:
